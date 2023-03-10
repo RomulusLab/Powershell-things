@@ -55,3 +55,53 @@
             -DnsDomain romlab.internal `
             -router 192.168.215.2 `
             -DnsServer 192.168.215.20
+#Add AD Objects
+        #Add OUs
+        New-ADOrganizationalUnit `
+            -Name CompanyOU `
+            -path "DC=romlab,DC=internal"
+        New-ADOrganizationalUnit `
+            -Name Albany `
+            -Path "OU=CompanyOU,DC=romlab,DC=internal"
+        New-ADOrganizationalUnit `
+            -Name San Francisco `
+            -path "OU=CompanyOU,DC=romlab,DC=internal"
+        New-ADOrganizationalUnit `
+            -name Computers `
+            -path "OU=Albany,OU=CompanyOU,DC=romlab,DC=internal"
+        New-ADOrganizationalUnit `
+            -Name Users `
+            -Path "OU=Albany,OU=CompanyOU,DC=romlab,DC=internal"
+        New-ADOrganizationalUnit `
+            -Name Servers `
+            -path "Ou=Computers,OU=Albany,OU=CompanyOU,DC=romlab,DC=internal"
+	    
+#UserSetup
+$SetPass = read-host -assecurestring
+$Users =Import-CSV "C:\shares\demos\setup\DemoUsers.csv" 
+$cred = Get-Credential
+#get-aduser -Filter * -Properties *| gm
+ForEach ($user in $users){ 
+    
+    New-ADUser `
+        -Credential $cred `
+        -Path $user.DistinguishedName `
+        -department $user.Department `
+        -SamAccountName $user.SamAccountName `
+        -Name $user.Name `
+        -Surname $user.Surname `
+        -GivenName $user.GivenName `
+        -UserPrincipalName $user.UserPrincipalName `
+        -City $user.city `
+        -ChangePasswordAtLogon $False `
+        -AccountPassword $SetPass `
+        -Enabled $False -Verbose
+        }
+#Set accounts as enabled
+    Set-ADUser -Identity 'crtest' -Enabled $True
+    set-aduser -Identity 'cradmin' -enable $true
+
+#Add mbadmin account to Admin Groups
+Add-ADGroupMember -Identity 'Domain Admins' -Members 'cradmin'
+Add-ADGroupMember -Identity 'Enterprise Admins' -Members 'cradmin'
+Add-ADGroupMember -Identity 'Schema Admins' -Members 'cradmin'
