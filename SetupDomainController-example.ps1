@@ -105,3 +105,26 @@ ForEach ($user in $users){
 Add-ADGroupMember -Identity 'Domain Admins' -Members 'cradmin'
 Add-ADGroupMember -Identity 'Enterprise Admins' -Members 'cradmin'
 Add-ADGroupMember -Identity 'Schema Admins' -Members 'cradmin'
+
+#Installing Active Directory on Second Server from Server1
+    #Install AD
+    Install-WindowsFeature -ComputerName Server2 -Name AD-Domain-Services
+    Enter-PSSession -ComputerName Server2
+    Get-Command -Module ADDSDeployment
+    Install-ADDSDomainController `
+        -Credential (Get-Credential) `
+        -InstallDns:$True `
+        -DomainName 'romlab.internal' `
+        -DatabasePath 'C:\Windows\NTDS' `
+        -LogPath 'C:\Windows\NTDS' `
+        -SysvolPath 'C:\Windows\SYSVOL' `
+        -NoGlobalCatalog:$false `
+        -SiteName 'Default-First-Site-Name' `
+        -NoRebootOnCompletion:$False `
+        -Force
+    Exit-PSSession
+    
+    #Verify DCs in Domain
+    Get-DnsServerResourceRecord -ComputerName Server2 -ZoneName romlab.internal -RRType Ns
+    Get-ADDomainController -Filter * -Server Server2 |
+        ft Name,ComputerObjectDN,IsGlobalCatalog
