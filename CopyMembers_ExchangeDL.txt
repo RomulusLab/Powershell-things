@@ -1,0 +1,18 @@
+# Connect to Exchange Online
+$UserCredential = Get-Credential
+Connect-ExchangeOnline -UserPrincipalName $UserCredential.UserName -ShowProgress $true
+
+# Set the source and target distribution lists
+$sourceList = "sourcelist@domain.com"
+$targetList = "targetlist@domain.com"
+
+# Get members of the source distribution list
+$sourceMembers = Get-DistributionGroupMember -Identity $sourceList
+
+# Add each member to the target distribution list
+foreach ($member in $sourceMembers) {
+    Add-DistributionGroupMember -Identity $targetList -Member $member.PrimarySmtpAddress
+}
+
+# Disconnect the session
+Disconnect-ExchangeOnline -Confirm:$false

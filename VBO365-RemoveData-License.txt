@@ -1,0 +1,27 @@
+$repository = Get-VBORepository -Name ""
+$users = Import-Csv -Path ""
+$counter = 0
+
+Foreach ($repouser in $users)
+{
+    $repouser = Get-VBOEntityData -Type User -Repository $repository -Name $repouser.Email
+    Remove-VBOEntityData -Repository $repository -User $repouser -Mailbox -ArchiveMailbox -OneDrive -Sites -confirm:$false       
+    $counter++
+    if($counter -eq $users.Count){break}
+}
+
+
+Foreach ($licensedUser in $users)
+{
+    $licensedUser = Get-VBOLicensedUser -Organization $org -Name $licensedUser.UserName
+    Remove-VBOLicensedUser -User $licensedUser
+    $counter++
+    if($counter -eq $users.Count){break}
+}
+
+Write-Host "Processed $counter users."
+
+
+foreach ($user in $user2) {
+   Remove-VBOEntityData -Repository $repository -User $user -Mailbox -ArchiveMailbox -OneDrive -Sites
+}

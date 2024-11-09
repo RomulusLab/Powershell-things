@@ -1,0 +1,11 @@
+# Create the service principal
+$sp = New-AzADServicePrincipal -DisplayName "VMDomainJoinSvcPrincipal"
+
+# Assign 'Directory Reader' role (minimum required for reading directory)
+New-AzRoleAssignment -RoleDefinitionName "Directory Reader" -ServicePrincipalName $sp.ApplicationId
+
+
+$appId = $sp.AppId
+Write-Host "ApplicationId: $appId"
+
+New-AzRoleAssignment -RoleDefinitionName "Virtual Machine Contributor" -ServicePrincipalName $appId

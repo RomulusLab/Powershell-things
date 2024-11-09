@@ -1,0 +1,26 @@
+# Set the source and target group IDs
+$sourceGroupId = "Source-Group-Object-ID"
+$targetGroupId = "Target-Group-Object-ID"
+
+# Get the applications assigned to the source group
+$applications = Get-AzureADGroupAppRoleAssignment -ObjectId $sourceGroupId
+
+# Assign the applications to the target group
+foreach ($app in $applications) {
+    New-AzureADGroupAppRoleAssignment -ObjectId $targetGroupId -PrincipalId $targetGroupId -ResourceId $app.ResourceId -Id $app.Id
+}
+
+
+
+Example:
+# Set the source and target group IDs
+$sourceGroupId = ""
+$targetGroupId = ""
+
+# Get the applications assigned to the source group
+$applications = Get-AzureADGroupAppRoleAssignment -ObjectId $sourceGroupId
+
+# Assign the applications to the target group
+foreach ($app in $applications) {
+    New-AzureADGroupAppRoleAssignment -ObjectId $targetGroupId -PrincipalId $targetGroupId -ResourceId $app.ResourceId -Id $app.Id
+}

@@ -1,0 +1,46 @@
+$PSVersionTable.PSVersion
+pwsh
+
+#Install PnP Powershell module
+Install-Module -Name PnP.PowerShell
+
+#Import PnP Powershell into current session
+Import-Module pnp.powershell
+
+Connect-PnPOnline -Url "https://ichnossciences1.sharepoint.com/sites/IchnosDevelopmentPrograms2" -Interactive
+
+# Define the user and site URL
+$userEmail = ""
+$siteUrl = ""
+
+# Connect to the site
+Connect-PnPOnline -Url $siteUrl -Interactive
+
+# Get all document libraries in the site
+$docLibraries = Get-PnPList | Where-Object { $_.BaseTemplate -eq 101 }
+
+foreach ($docLibrary in $docLibraries) {
+    Write-Host "Checking document library: $($docLibrary.Title)"
+    
+    # Get all items in the document library
+    $items = Get-PnPListItem -List $docLibrary.Title
+
+    foreach ($item in $items) {
+        $itemPermissions = Get-PnPProperty -ClientObject $item -Property RoleAssignments
+
+        foreach ($roleAssignment in $itemPermissions) {
+            $member = Get-PnPProperty -ClientObject $roleAssignment -Property Member
+
+            if ($member.PrincipalType -eq "User" -and $member.Email -eq $userEmail) {
+                Write-Host "$($userEmail) has the following permissions on $($docLibrary.Title) item ID $($item.Id):"
+                
+                $roleBindings = Get-PnPProperty -ClientObject $roleAssignment -Property RoleDefinitionBindings
+                
+                foreach ($role in $roleBindings) {
+                    Write-Host "Role: $($role.Name)"
+                }
+            }
+        }
+    }
+}
+
